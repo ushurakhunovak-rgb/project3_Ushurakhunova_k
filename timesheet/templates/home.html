@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Главная - Timesheet{% endblock %}
+{% block content %}
+<div class="row mt-4">
+    <div class="col-md-8">
+        <div class="card shadow border-0">
+            <div class="card-body text-center p-5">
+                <i class="bi bi-clock-history fs-1 text-primary mb-3 d-block"></i>
+                <h1 class="card-title text-primary mb-4">Добро пожаловать в Timesheet!</h1>
+                <p class="lead text-muted mb-4">Учёт времени сотрудников: фиксируйте часы на проектах, получайте отчёты и уведомления о переработках.</p>
+                {% if user.is_authenticated %}
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h5><i class="bi bi-file-earmark-text"></i> Записей</h5>
+                                    <h2>{{ total_timesheets }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h5><i class="bi bi-stopwatch"></i> Общих часов</h5>
+                                    <h2>{{ total_hours|floatformat:1 }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="{% url 'timesheet_list' %}" class="btn btn-primary btn-lg me-2"><i class="bi bi-list-ul"></i> Мои Timesheets</a>
+                    <a href="{% url 'timesheet_create' %}" class="btn btn-success btn-lg"><i class="bi bi-plus-circle"></i> Добавить запись</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-lg"><i class="bi bi-box-arrow-in-right"></i> Войти</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow">
+            <div class="card-header bg-secondary text-white">
+                <h5><i class="bi bi-lightbulb"></i> Как использовать</h5>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Выберите задачу и проект</li>
+                <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Укажите дату и часы</li>
+                <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Менеджер одобрит</li>
+                <li class="list-group-item"><i class="bi bi-check-circle text-success me-2"></i>Получите отчёт по зарплате</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

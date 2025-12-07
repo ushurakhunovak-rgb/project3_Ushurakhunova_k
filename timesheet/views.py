@@ -1,10 +1,19 @@
-from django.shortcuts import render, redirect  # Добавь render и redirect (если нет)
+from django.shortcuts import render, redirect  
 from django.views.generic import ListView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-from django.db.models import Sum  # Добавь Sum, если нет (для статистики)
+from django.db.models import Sum 
 from .models import Timesheet, Employee
 from .forms import TimesheetForm
+
+def home_view(request):
+    if request.user.is_authenticated:
+        total_timesheets = Timesheet.objects.filter(employee__user=request.user).count()
+        total_hours = Timesheet.objects.filter(employee__user=request.user).aggregate(Sum('hours'))['hours__sum'] or 0
+        context = {'total_timesheets': total_timesheets, 'total_hours': total_hours}
+    else:
+        context = {}
+    return render(request, 'home.html', context)
 
 class TimesheetListView(LoginRequiredMixin, ListView):
     model = Timesheet
@@ -47,11 +56,3 @@ class TimesheetDeleteView(LoginRequiredMixin, DeleteView):
 from django.db.models import Sum
 from .models import Timesheet
 
-def home_view(request):
-    if request.user.is_authenticated:
-        total_timesheets = Timesheet.objects.filter(employee__user=request.user).count()
-        total_hours = Timesheet.objects.filter(employee__user=request.user).aggregate(Sum('hours'))['hours__sum'] or 0
-        context = {'total_timesheets': total_timesheets, 'total_hours': total_hours}
-    else:
-        context = {}
-    return render(request, 'home.html', context)
