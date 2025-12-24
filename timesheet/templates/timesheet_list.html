@@ -1,52 +1,100 @@
 {% extends 'base.html' %}
-{% block title %}Мои Timesheets{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h3 class="mb-0"><i class="bi bi-list-ul me-2"></i>Мои Timesheets</h3>
-            </div>
-            <div class="card-body">
-                <a href="{% url 'timesheet_create' %}" class="btn btn-success mb-3"><i class="bi bi-plus-circle"></i> Добавить запись</a>
-                {% if timesheets %}
-                <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Дата</th>
-                                <th>Задача</th>
-                                <th>Часы</th>
-                                <th>Статус</th>
-                                <th>Действия</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for ts in timesheets %}
-                            <tr>
-                                <td>{{ ts.date }}</td>
-                                <td>{{ ts.task.name }}</td>
-                                <td>{{ ts.hours }} ч</td>
-                                <td><span class="badge bg-{% if ts.status == 'pending' %}warning{% elif ts.status == 'approved' %}success{% else %}danger{% endif %}">{{ ts.get_status_display }}</span></td>
-                                <td>
-                                    <a href="{% url 'timesheet_update' ts.pk %}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i> Редактировать</a>
-                                    <a href="{% url 'timesheet_delete' ts.pk %}" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Удалить</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div class="alert alert-info text-center">
-                    <i class="bi bi-inbox fs-1 mb-2 d-block"></i>
-                    <h5>Нет записей</h5>
-                    <p>Начните с добавления первой timesheet!</p>
-                    <a href="{% url 'timesheet_create' %}" class="btn btn-primary">Создать первую</a>
-                </div>
-                {% endif %}
+<div class="container mt-4">
+    <h2 class="text-primary mb-4">Мои Timesheets</h2>
+
+    <a href="{% url 'timesheet_create' %}" class="btn btn-success mb-4">
+        <i class="bi bi-plus-circle"></i> Добавить запись
+    </a>
+
+    <!-- Сообщения (одобрение, отклонение, создание и т.д.) -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover mb-0 align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Дата</th>
+                            <th>Сотрудник</th>
+                            <th>Проект → Задача</th>
+                            <th>Часы</th>
+                            <th>Статус</th>
+                            <th>Действия</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ts in timesheets %}
+                        <tr>
+                            <td>{{ ts.date|date:"d M Y" }}</td>
+                            <td>
+                                <strong>{{ ts.employee.user.get_full_name|default:ts.employee.user.username }}</strong>
+                            </td>
+                            <td>
+                                <span class="text-muted">{{ ts.task.project.name }}</span> →
+                                <strong>{{ ts.task.name }}</strong>
+                            </td>
+                            <td>{{ ts.hours }} ч</td>
+                            <td>
+                                {% if is_manager and ts.status == 'pending' %}
+                                    <a href="{% url 'approve_timesheet' ts.pk %}" 
+                                       class="btn btn-primary btn-sm">
+                                        Рассмотреть
+                                    </a>
+                                {% else %}
+                                    {% if ts.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Ожидает одобрения</span>
+                                    {% elif ts.status == 'approved' %}
+                                        <span class="badge bg-success">Одобрено</span>
+                                    {% elif ts.status == 'rejected' %}
+                                        <span class="badge bg-danger">Отклонено</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if ts.employee.user == user %}
+                                    <a href="{% url 'timesheet_update' ts.pk %}" 
+                                       class="btn btn-outline-info btn-sm me-1" title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <a href="{% url 'timesheet_delete' ts.pk %}" 
+                                       class="btn btn-outline-danger btn-sm" title="Удалить">
+                                        <i class="bi bi-trash"></i>
+                                    </a>
+                                {% else %}
+                                    <small class="text-muted">—</small>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">
+                                Нет записей для отображения.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
+    {% if is_manager %}
+    <div class="alert alert-info mt-4" role="alert">
+        <i class="bi bi-shield-check"></i>
+        <strong>Режим менеджера:</strong> вы видите записи всех сотрудников.
+    </div>
+    {% endif %}
 </div>
 {% endblock %}

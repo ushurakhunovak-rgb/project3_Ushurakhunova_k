@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Рассмотрение записи таймшита</h2>
+
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <strong>Запись #{{ ts.pk }}</strong>
+        </div>
+        <div class="card-body">
+            <p><strong>Дата:</strong> {{ ts.date|date:"d E Y" }}</p>
+            <p><strong>Сотрудник:</strong> {{ ts.employee.user.get_full_name|default:ts.employee.user.username }}</p>
+            <p><strong>Проект:</strong> {{ ts.task.project.name }}</p>
+            <p><strong>Задача:</strong> {{ ts.task.name }}</p>
+            <p><strong>Часы:</strong> {{ ts.hours }}</p>
+            <p><strong>Заметки:</strong> {{ ts.notes|default:"—" }}</p>
+            <p><strong>Текущий статус:</strong> 
+                <span class="badge bg-warning text-dark">Ожидает одобрения</span>
+            </p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <p class="lead">Подтвердите ваше решение:</p>
+        
+        <button type="submit" name="action" value="approve" class="btn btn-success btn-lg me-3">
+            Одобрить
+        </button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger btn-lg me-3">
+            Отклонить
+        </button>
+        <a href="{% url 'timesheet_list' %}" class="btn btn-secondary btn-lg">
+            Отмена
+        </a>
+    </form>
+</div>
+{% endblock %}
