@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block content %}
+<h1>Мои Timesheets</h1>
+<a href="{% url 'timesheet_create' %}">Добавить запись</a>
+<table border="1">
+    <tr><th>Дата</th><th>Задача</th><th>Часы</th><th>Статус</th><th>Действия</th></tr>
+    {% for ts in timesheets %}
+    <tr>
+        <td>{{ ts.date }}</td>
+        <td>{{ ts.task.name }}</td>
+        <td>{{ ts.hours }}</td>
+        <td>{{ ts.get_status_display }}</td>
+        <td>
+            <a href="{% url 'timesheet_update' ts.pk %}">Редактировать</a> |
+            <a href="{% url 'timesheet_delete' ts.pk %}">Удалить</a>
+        </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5">Нет записей</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}
