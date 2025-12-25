@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="card mt-4">
+    <div class="card-body">
+        <h2 class="text-danger">Подтверждение удаления</h2>
+        <p>Вы уверены, что хотите удалить запись?</p>
+        
+        <ul>
+            <li><strong>Дата:</strong> {{ object.date|date:"d M Y" }}</li>
+            <li><strong>Сотрудник:</strong> {{ object.employee.user.get_full_name|default:object.employee.user.username }}</li>
+            <li><strong>Задача:</strong> {{ object.task.project.name }} → {{ object.task.name }}</li>
+            <li><strong>Часы:</strong> {{ object.hours }} ч</li>
+            <li><strong>Статус:</strong> {{ object.get_status_display }}</li>
+        </ul>
+        
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Да, удалить</button>
+            <a href="{% url 'timesheet_list' %}" class="btn btn-secondary">Отмена</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
