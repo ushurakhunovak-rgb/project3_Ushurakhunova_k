@@ -1,39 +1,116 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
+
+{% block title %}Рассмотрение записи #{{ ts.pk }}{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-4">Рассмотрение записи таймшита</h2>
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="card shadow-lg border-0 rounded-4">
+                <div class="card-header bg-gradient text-white text-center py-4" 
+                     style="background: linear-gradient(135deg, #0d6efd, #6610f2);">
+                    <h3 class="mb-0">
+                        <i class="bi bi-file-earmark-check me-3"></i>
+                        Рассмотрение записи #{{ ts.pk }}
+                    </h3>
+                </div>
 
-    <div class="card mb-4">
-        <div class="card-header bg-primary text-white">
-            <strong>Запись #{{ ts.pk }}</strong>
-        </div>
-        <div class="card-body">
-            <p><strong>Дата:</strong> {{ ts.date|date:"d E Y" }}</p>
-            <p><strong>Сотрудник:</strong> {{ ts.employee.user.get_full_name|default:ts.employee.user.username }}</p>
-            <p><strong>Проект:</strong> {{ ts.task.project.name }}</p>
-            <p><strong>Задача:</strong> {{ ts.task.name }}</p>
-            <p><strong>Часы:</strong> {{ ts.hours }}</p>
-            <p><strong>Заметки:</strong> {{ ts.notes|default:"—" }}</p>
-            <p><strong>Текущий статус:</strong> 
-                <span class="badge bg-warning text-dark">Ожидает одобрения</span>
-            </p>
+                <div class="card-body p-5">
+                    <!-- Детали записи -->
+                    <div class="row g-4 mb-5">
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-calendar3 text-primary me-3 fs-4"></i>
+                                <div>
+                                    <strong>Дата:</strong><br>
+                                    <span class="fs-5">{{ ts.date|date:"d E Y" }}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-person text-primary me-3 fs-4"></i>
+                                <div>
+                                    <strong>Сотрудник:</strong><br>
+                                    <span class="fs-5">{{ ts.employee.user.get_full_name|default:ts.employee.user.username }}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-folder text-primary me-3 fs-4"></i>
+                                <div>
+                                    <strong>Проект:</strong><br>
+                                    <span class="fs-5">{{ ts.task.project.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-list-task text-primary me-3 fs-4"></i>
+                                <div>
+                                    <strong>Задача:</strong><br>
+                                    <span class="fs-5">{{ ts.task.name }}</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-center mb-3">
+                                <i class="bi bi-clock-history text-primary me-3 fs-4"></i>
+                                <div>
+                                    <strong>Часы:</strong><br>
+                                    <span class="fs-5">{{ ts.hours }} ч</span>
+                                </div>
+                            </div>
+
+                            <div class="d-flex align-items-start">
+                                <i class="bi bi-chat-dots text-primary me-3 fs-4 mt-1"></i>
+                                <div>
+                                    <strong>Заметки:</strong><br>
+                                    <span class="fs-5">{{ ts.notes|default:"—"|linebreaksbr }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Текущий статус -->
+                    <div class="text-center mb-5">
+                        <p class="lead mb-3">Текущий статус записи:</p>
+                        {% if ts.status == 'pending' %}
+                            <span class="badge bg-warning text-dark fs-4 px-4 py-2">Ожидает одобрения</span>
+                        {% elif ts.status == 'approved' %}
+                            <span class="badge bg-success fs-4 px-4 py-2">Одобрено</span>
+                        {% elif ts.status == 'rejected' %}
+                            <span class="badge bg-danger fs-4 px-4 py-2">Отклонено</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Кнопки действий -->
+                    <form method="post" class="text-center">
+                        {% csrf_token %}
+                        <p class="lead fw-bold mb-4">Подтвердите ваше решение:</p>
+
+                        <div class="d-flex flex-wrap justify-content-center gap-3">
+                            <button type="submit" name="action" value="approve" 
+                                    class="btn btn-success btn-lg px-5 py-3 shadow">
+                                <i class="bi bi-check-circle-fill me-2 fs-4"></i>
+                                Одобрить
+                            </button>
+
+                            <button type="submit" name="action" value="reject" 
+                                    class="btn btn-danger btn-lg px-5 py-3 shadow">
+                                <i class="bi bi-x-circle-fill me-2 fs-4"></i>
+                                Отклонить
+                            </button>
+
+                            <a href="{% url 'timesheet_list' %}" 
+                               class="btn btn-outline-secondary btn-lg px-5 py-3">
+                                <i class="bi bi-arrow-left me-2 fs-4"></i>
+                                Отмена
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
-
-    <form method="post">
-        {% csrf_token %}
-        <p class="lead">Подтвердите ваше решение:</p>
-        
-        <button type="submit" name="action" value="approve" class="btn btn-success btn-lg me-3">
-            Одобрить
-        </button>
-        <button type="submit" name="action" value="reject" class="btn btn-danger btn-lg me-3">
-            Отклонить
-        </button>
-        <a href="{% url 'timesheet_list' %}" class="btn btn-secondary btn-lg">
-            Отмена
-        </a>
-    </form>
 </div>
 {% endblock %}

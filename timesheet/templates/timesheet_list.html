@@ -1,20 +1,24 @@
 {% extends 'base.html' %}
 
+{% block title %}Мои Timesheets{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2 class="text-primary mb-4">Мои Timesheets</h2>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-primary mb-0">
+            <i class="bi bi-list-check me-3"></i>Мои Timesheets
+        </h2>
+        <a href="{% url 'timesheet_create' %}" class="btn btn-success btn-lg shadow">
+            <i class="bi bi-plus-circle me-2"></i> Добавить запись
+        </a>
+    </div>
 
-    <!-- Кнопка добавления записи -->
-    <a href="{% url 'timesheet_create' %}" class="btn btn-success mb-4">
-        <i class="bi bi-plus-circle"></i> Добавить запись
-    </a>
-
-    <!-- Сообщения Django (одобрение, создание, отправка отчёта и т.д.) -->
+    <!-- Сообщения -->
     {% if messages %}
     <div class="mb-4">
         {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-            {{ message }}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm" role="alert">
+            <i class="bi bi-info-circle me-2"></i>{{ message }}
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Закрыть"></button>
         </div>
         {% endfor %}
@@ -23,72 +27,75 @@
 
     <!-- Кнопки для менеджера -->
     {% if is_manager %}
-    <div class="mb-4">
-        <a href="{% url 'export_excel' %}" class="btn btn-success btn-lg me-3">
-            <i class="bi bi-file-earmark-excel"></i> Экспорт в Excel
-        </a>
-        <a href="{% url 'send_report_email' %}" class="btn btn-primary btn-lg">
-            <i class="bi bi-envelope"></i> Отправить отчёт на email
-        </a>
+    <div class="card shadow-sm border-0 mb-4">
+        <div class="card-body bg-light">
+            <div class="d-flex flex-wrap gap-3 justify-content-center justify-content-md-start">
+                <a href="{% url 'export_excel' %}" class="btn btn-success btn-lg px-5 shadow">
+                    <i class="bi bi-file-earmark-excel-fill me-2"></i> Экспорт в Excel
+                </a>
+                <a href="{% url 'send_report_email' %}" class="btn btn-primary btn-lg px-5 shadow">
+                    <i class="bi bi-envelope-fill me-2"></i> Отправить отчёт на email
+                </a>
+            </div>
+        </div>
     </div>
     {% endif %}
 
-    <div class="card shadow-sm">
+    <!-- Таблица записей -->
+    <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-striped table-hover mb-0 align-middle">
-                    <thead class="table-dark">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-dark text-white">
                         <tr>
-                            <th>Дата</th>
+                            <th class="ps-4">Дата</th>
                             {% if is_manager %}
                             <th>Сотрудник</th>
                             {% endif %}
                             <th>Проект → Задача</th>
-                            <th>Часы</th>
-                            <th>Статус / Одобрение</th>
-                            <th>Действия</th>
+                            <th class="text-center">Часы</th>
+                            <th>Статус</th>
+                            <th class="text-end pe-4">Действия</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody class="table-group-divider">
                         {% for ts in timesheets %}
-                        <tr>
-                            <td>{{ ts.date|date:"d M Y" }}</td>
+                        <tr class="align-middle">
+                            <td class="ps-4 fw-bold">{{ ts.date|date:"d M Y" }}</td>
                             {% if is_manager %}
                             <td>
                                 <strong>{{ ts.employee.user.get_full_name|default:ts.employee.user.username }}</strong>
                             </td>
                             {% endif %}
                             <td>
-                                <span class="text-muted">{{ ts.task.project.name }}</span> →
-                                {{ ts.task.name }}
+                                <span class="text-muted small">{{ ts.task.project.name }}</span><br>
+                                <strong>{{ ts.task.name }}</strong>
                             </td>
-                            <td>{{ ts.hours }} ч</td>
+                            <td class="text-center fw-bold">{{ ts.hours }} ч</td>
                             <td>
                                 {% if is_manager and ts.status == 'pending' %}
                                     <a href="{% url 'approve_timesheet' ts.pk %}" 
-                                       class="btn btn-primary btn-sm">
-                                        Рассмотреть
+                                       class="btn btn-warning btn-sm shadow-sm">
+                                        <i class="bi bi-eye me-1"></i> Рассмотреть
                                     </a>
                                 {% else %}
                                     {% if ts.status == 'pending' %}
-                                        <span class="badge bg-warning text-dark">Ожидает одобрения</span>
+                                        <span class="badge bg-warning text-dark px-3 py-2">Ожидает одобрения</span>
                                     {% elif ts.status == 'approved' %}
-                                        <span class="badge bg-success">Одобрено</span>
+                                        <span class="badge bg-success px-3 py-2">Одобрено</span>
                                     {% elif ts.status == 'rejected' %}
-                                        <span class="badge bg-danger">Отклонено</span>
-                                    {% else %}
-                                        <span class="badge bg-secondary">{{ ts.get_status_display }}</span>
+                                        <span class="badge bg-danger px-3 py-2">Отклонено</span>
                                     {% endif %}
                                 {% endif %}
                             </td>
-                            <td>
+                            <td class="text-end pe-4">
                                 {% if ts.employee.user == user %}
                                     <a href="{% url 'timesheet_update' ts.pk %}" 
-                                       class="btn btn-outline-info btn-sm me-1" title="Редактировать">
+                                       class="btn btn-outline-primary btn-sm me-1 shadow-sm" title="Редактировать">
                                         <i class="bi bi-pencil"></i>
                                     </a>
                                     <a href="{% url 'timesheet_delete' ts.pk %}" 
-                                       class="btn btn-outline-danger btn-sm" title="Удалить">
+                                       class="btn btn-outline-danger btn-sm shadow-sm" title="Удалить">
                                         <i class="bi bi-trash"></i>
                                     </a>
                                 {% else %}
@@ -98,8 +105,16 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="{% if is_manager %}6{% else %}5{% endif %}" class="text-center py-5 text-muted">
-                                Нет записей для отображения.
+                            <td colspan="{% if is_manager %}6{% else %}5{% endif %}" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="bi bi-inbox display-4 d-block mb-3 opacity-50"></i>
+                                    <p class="lead">Нет записей для отображения</p>
+                                    {% if not is_manager %}
+                                    <a href="{% url 'timesheet_create' %}" class="btn btn-primary">
+                                        <i class="bi bi-plus-circle me-2"></i> Создать первую запись
+                                    </a>
+                                    {% endif %}
+                                </div>
                             </td>
                         </tr>
                         {% endfor %}
@@ -109,10 +124,10 @@
         </div>
     </div>
 
-    <!-- Информация для менеджера -->
+    <!-- Инфо для менеджера -->
     {% if is_manager %}
-    <div class="alert alert-info mt-4" role="alert">
-        <i class="bi bi-shield-check"></i>
+    <div class="alert alert-info mt-4 border-0 shadow-sm" role="alert">
+        <i class="bi bi-shield-check fs-4 me-2"></i>
         <strong>Режим менеджера:</strong> вы видите записи всех сотрудников.
     </div>
     {% endif %}

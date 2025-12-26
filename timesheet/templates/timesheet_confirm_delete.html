@@ -1,23 +1,111 @@
 {% extends 'base.html' %}
+
+{% block title %}Удалить запись #{{ object.pk }}{% endblock %}
+
 {% block content %}
-<div class="card mt-4">
-    <div class="card-body">
-        <h2 class="text-danger">Подтверждение удаления</h2>
-        <p>Вы уверены, что хотите удалить запись?</p>
-        
-        <ul>
-            <li><strong>Дата:</strong> {{ object.date|date:"d M Y" }}</li>
-            <li><strong>Сотрудник:</strong> {{ object.employee.user.get_full_name|default:object.employee.user.username }}</li>
-            <li><strong>Задача:</strong> {{ object.task.project.name }} → {{ object.task.name }}</li>
-            <li><strong>Часы:</strong> {{ object.hours }} ч</li>
-            <li><strong>Статус:</strong> {{ object.get_status_display }}</li>
-        </ul>
-        
-        <form method="post">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-danger">Да, удалить</button>
-            <a href="{% url 'timesheet_list' %}" class="btn btn-secondary">Отмена</a>
-        </form>
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9">
+            <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                <div class="card-header bg-danger text-white text-center py-5">
+                    <i class="bi bi-exclamation-triangle-fill display-4 mb-3"></i>
+                    <h3 class="mb-0">Подтверждение удаления</h3>
+                </div>
+
+                <div class="card-body p-5">
+                    <div class="text-center mb-5">
+                        <p class="lead fs-4 text-muted">
+                            Вы уверены, что хотите <strong class="text-danger">безвозвратно удалить</strong> эту запись?
+                        </p>
+                    </div>
+
+                    <!-- Детали записи -->
+                    <div class="bg-light rounded-3 p-4 mb-5">
+                        <h5 class="text-center mb-4 text-primary">
+                            <i class="bi bi-file-earmark-text me-2"></i> Информация о записи #{{ object.pk }}
+                        </h5>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-calendar-event text-danger me-3 fs-4"></i>
+                                    <div>
+                                        <strong>Дата:</strong><br>
+                                        <span class="fs-5">{{ object.date|date:"d E Y" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-person text-danger me-3 fs-4"></i>
+                                    <div>
+                                        <strong>Сотрудник:</strong><br>
+                                        <span class="fs-5">{{ object.employee.user.get_full_name|default:object.employee.user.username }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-list-task text-danger me-3 fs-4"></i>
+                                    <div>
+                                        <strong>Задача:</strong><br>
+                                        <span class="fs-5">{{ object.task.project.name }} → {{ object.task.name }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-clock-history text-danger me-3 fs-4"></i>
+                                    <div>
+                                        <strong>Часы:</strong><br>
+                                        <span class="fs-5">{{ object.hours }} ч</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-tag text-danger me-3 fs-4"></i>
+                                    <div>
+                                        <strong>Статус:</strong><br>
+                                        <span class="fs-5">
+                                            {% if object.status == 'pending' %}
+                                                <span class="badge bg-warning text-dark">Ожидает одобрения</span>
+                                            {% elif object.status == 'approved' %}
+                                                <span class="badge bg-success">Одобрено</span>
+                                            {% elif object.status == 'rejected' %}
+                                                <span class="badge bg-danger">Отклонено</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Кнопки действий -->
+                    <div class="text-center">
+                        <form method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-lg px-5 py-3 shadow">
+                                <i class="bi bi-trash-fill me-2 fs-4"></i>
+                                Да, удалить навсегда
+                            </button>
+                        </form>
+
+                        <a href="{% url 'timesheet_list' %}" class="btn btn-secondary btn-lg px-5 py-3 ms-3 shadow">
+                            <i class="bi bi-arrow-left me-2 fs-4"></i>
+                            Отмена
+                        </a>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Удалённую запись восстановить будет невозможно
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
